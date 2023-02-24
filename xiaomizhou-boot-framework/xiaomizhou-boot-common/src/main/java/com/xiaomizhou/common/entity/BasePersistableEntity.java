@@ -16,7 +16,6 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @SuperBuilder(toBuilder = true)
-@EqualsAndHashCode(callSuper = true)
 public abstract class BasePersistableEntity<ID> implements Persistable<ID>, Serializable {
     private ID id;
 
