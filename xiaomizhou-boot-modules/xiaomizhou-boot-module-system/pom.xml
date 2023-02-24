@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.xiaomizhou</groupId>
+        <artifactId>xiaomizhou-boot-build</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../xiaomizhou-boot-build</relativePath>
+    </parent>
+
+    <artifactId>xiaomizhou-boot-module-system</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>xiaomizhou-boot-system-repository</module>
+        <module>xiaomizhou-boot-system-service</module>
+        <module>xiaomizhou-boot-system-controller</module>
+        <module>xiaomizhou-boot-system-api</module>
+        <module>xiaomizhou-boot-starter-system</module>
+    </modules>
+
+
+    <properties>
+
+    </properties>
+
+</project>

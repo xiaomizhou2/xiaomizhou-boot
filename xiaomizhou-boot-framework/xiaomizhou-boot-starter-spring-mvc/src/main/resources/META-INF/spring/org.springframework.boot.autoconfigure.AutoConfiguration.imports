@@ -1,0 +1,2 @@
+com.xiaomizhou.springmvc.configuration.QueryParametersArgumentResolverConfiguration
+com.xiaomizhou.springmvc.configuration.SpringMvcGlobalExceptionConfiguration
