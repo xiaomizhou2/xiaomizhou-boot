@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.xiaomizhou.system.repository.PermissionRepository">
+    <resultMap id="baseResultMap" type="com.xiaomizhou.system.entity.PermissionEntity">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="order_no" jdbcType="TINYINT" property="orderNo"/>
+        <result column="application_id" jdbcType="VARCHAR" property="application.id"/>
+        <result column="application.code" jdbcType="VARCHAR" property="application.code"/>
+        <result column="application.name" jdbcType="VARCHAR" property="application.name"/>
+        <result column="parent_id" jdbcType="VARCHAR" property="parent.id"/>
+        <result column="parent.code" jdbcType="VARCHAR" property="parent.code"/>
+        <result column="parent.title" jdbcType="VARCHAR" property="parent.title"/>
+        <result column="path" jdbcType="VARCHAR" property="path"/>
+        <result column="component" jdbcType="VARCHAR" property="component"/>
+        <result column="redirect" jdbcType="VARCHAR" property="redirect"/>
+        <result column="type" jdbcType="TINYINT" property="type"/>
+        <result column="meta" jdbcType="VARCHAR" property="meta"/>
+        <result column="created_user_id" jdbcType="VARCHAR" property="createdUser.id"/>
+        <result column="createdUser.name" jdbcType="VARCHAR" property="createdUser.name"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="last_modified_user_id" jdbcType="VARCHAR" property="lastModifiedUser.id"/>
+        <result column="lastModifiedUser.name" jdbcType="VARCHAR" property="lastModifiedUser.name"/>
+        <result column="last_modified_time" jdbcType="TIMESTAMP" property="lastModifiedTime"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="deleted" jdbcType="BIT" property="deleted"/>
+    </resultMap>
+
+    <resultMap id="treeResultMap" type="com.xiaomizhou.system.entity.PermissionEntity" extends="baseResultMap">
+        <collection property="children" ofType="com.xiaomizhou.system.entity.PermissionEntity"
+                    select="com.xiaomizhou.system.repository.PermissionRepository.childrenListByParentId"
+                    column="id"/>
+    </resultMap>
+
+    <resultMap id="detailResultMap" type="com.xiaomizhou.system.entity.PermissionEntity" extends="treeResultMap">
+        <collection property="apis" ofType="com.xiaomizhou.system.entity.ApiEntity"
+                    select="com.xiaomizhou.system.repository.ApiRepository.listByPermissionId"
+                    column="id"/>
+    </resultMap>
+
+    <sql id="orderBySql">
+        <choose>
+            <when test='pageable != null and pageable.sort != null'>
+                <foreach collection="pageable.sort.toList()" item="order"
+                         index="index" open=" order by " close="" separator=",">
+                    <include refid="orderByField"/>
+                </foreach>
+            </when>
+            <otherwise>
+                order by t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="orderByField">
+        <choose>
+            <when test="order.property == 'code'">
+                t.code
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'name'">
+                t.name
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'orderNo'">
+                t.order_no
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'createdTime'">
+                t.created_time
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <otherwise>
+                t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="selectBase">
+        SELECT t.id,
+               t.code,
+               t.title,
+               t.application_id,
+               application.code      AS "application.code",
+               application.name      AS "application.name",
+               t.parent_id,
+               parent.code           AS "parent.code",
+               parent.title           AS "parent.title",
+               t.root_path,
+               t.root_name,
+               t.path,
+               t.component,
+               t.redirect,
+               t.icon,
+               t.`type`,
+               t.meta,
+               t.order_no,
+               t.created_user_id,
+               createdUser.name      AS "createdUser.name",
+               t.created_time,
+               t.last_modified_user_id,
+               lastModifiedUser.name AS "lastModifiedUser.name",
+               t.last_modified_time,
+               t.description,
+               t.deleted
+        FROM t_permission t
+                 LEFT JOIN t_user createdUser ON t.created_user_id = createdUser.id
+                 LEFT JOIN t_user lastModifiedUser ON t.last_modified_user_id = lastModifiedUser.id
+                 LEFT JOIN t_application application ON t.application_id = application.id
+                 LEFT JOIN t_permission parent ON t.parent_id = parent.id
+    </sql>
+
+    <select id="findById" resultMap="detailResultMap">
+        <include refid="selectBase"/>
+        WHERE t.deleted = 0
+        AND t.id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="find" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        <where>
+            t.deleted = 0
+            <if test="parameters.code != null and parameters.code != ''">
+                AND t.code LIKE CONCAT('%', #{parameters.code}, '%')
+            </if>
+            <if test="parameters.name != null and parameters.name != ''">
+                AND t.name LIKE CONCAT('%', #{parameters.name}, '%')
+            </if>
+            <if test="parameters.type != null and parameters.type != ''">
+                AND t.type = #{parameters.type}
+            </if>
+            <if test="parameters.title != null and parameters.title != ''">
+                AND t.title LIKE CONCAT('%', #{parameters.title}, '%')
+            </if>
+            <if test="parameters.component != null and parameters.component != ''">
+                AND t.component LIKE CONCAT('%', #{parameters.component}, '%')
+            </if>
+            <if test="parameters.path != null and parameters.path != ''">
+                AND t.path LIKE CONCAT('%', #{parameters.path}, '%')
+            </if>
+            <if test="parameters.applicationId != null and parameters.applicationId != ''">
+                AND t.application_id = #{parameters.applicationId}
+            </if>
+            <if test="parameters.applicationCode != null and parameters.applicationCode != ''">
+                AND application.code = #{parameters.applicationCode}
+            </if>
+            <if test="parameters.applicationName != null and parameters.applicationName != ''">
+                AND application.name LIKE CONCAT('%', #{parameters.applicationName}, '%')
+            </if>
+            <if test="parameters.parentId != null and parameters.parentId != ''">
+                AND t.parent_id = #{parameters.parentId}
+            </if>
+            <if test="parameters.parentCode != null and parameters.parentCode != ''">
+                AND parent.code = #{parameters.parentCode}
+            </if>
+            <if test="parameters.parentName != null and parameters.parentName != ''">
+                AND parent.name LIKE CONCAT('%', #{parameters.parentName}, '%')
+            </if>
+        </where>
+        <include refid="orderBySql"/>
+    </select>
+
+    <select id="childrenListByParentId" resultMap="treeResultMap">
+        <include refid="selectBase"/>
+        WHERE t.deleted = 0
+        AND t.parent_id = #{parentId}
+        ORDER BY t.order_no ASC, t.created_time DESC
+    </select>
+
+    <select id="listByRoleId" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        LEFT JOIN t_role_permission role_permission ON role_permission.permission_id = t.id
+        WHERE t.deleted = 0 AND role_permission.role_id = #{roleId,jdbcType=VARCHAR}
+        ORDER BY t.order_no ASC, t.created_time DESC
+    </select>
+</mapper>

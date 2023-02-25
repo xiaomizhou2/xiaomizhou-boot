@@ -20,10 +20,11 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = true)
 public abstract class BaseAuditableEntity<U, ID> extends BasePersistableEntity<ID>
         implements Auditable<U, ID, LocalDateTime> {
+
     private LocalDateTime createdTime;
-    private LocalDateTime updatedTime;
+    private LocalDateTime lastModifiedTime;
     private U createdUser;
-    private U updatedUser;
+    private U lastModifiedUser;
 
     @Override
     public Optional<U> getCreatedBy() {
@@ -47,21 +48,21 @@ public abstract class BaseAuditableEntity<U, ID> extends BasePersistableEntity<I
 
     @Override
     public Optional<U> getLastModifiedBy() {
-        return Optional.ofNullable(this.updatedUser);
+        return Optional.ofNullable(this.lastModifiedUser);
     }
 
     @Override
     public void setLastModifiedBy(U lastModifiedBy) {
-        this.setUpdatedUser(lastModifiedBy);
+        this.setLastModifiedUser(lastModifiedBy);
     }
 
     @Override
     public Optional<LocalDateTime> getLastModifiedDate() {
-        return Optional.ofNullable(this.updatedTime);
+        return Optional.ofNullable(this.lastModifiedTime);
     }
 
     @Override
     public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
-        this.setUpdatedTime(lastModifiedDate);
+        this.setLastModifiedTime(lastModifiedDate);
     }
 }

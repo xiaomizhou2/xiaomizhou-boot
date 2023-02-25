@@ -12,9 +12,14 @@
     <artifactId>xiaomizhou-boot-system-repository</artifactId>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xiaomizhou</groupId>
+            <artifactId>xiaomizhou-boot-starter-mybatis</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

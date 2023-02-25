@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.xiaomizhou.system.repository.DepartmentRepository">
+    <resultMap id="baseResultMap" type="com.xiaomizhou.system.entity.DepartmentEntity">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="organization_id" jdbcType="VARCHAR" property="organization.id"/>
+        <result column="organization.code" jdbcType="VARCHAR" property="organization.code"/>
+        <result column="organization.name" jdbcType="VARCHAR" property="organization.name"/>
+        <result column="parent_id" jdbcType="VARCHAR" property="parent.id"/>
+        <result column="parent.code" jdbcType="VARCHAR" property="parent.code"/>
+        <result column="parent.name" jdbcType="VARCHAR" property="parent.name"/>
+        <result column="order_no" jdbcType="TINYINT" property="orderNo"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="created_user_id" jdbcType="VARCHAR" property="createdUser.id"/>
+        <result column="createdUser.name" jdbcType="VARCHAR" property="createdUser.name"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="last_modified_user_id" jdbcType="VARCHAR" property="lastModifiedUser.id"/>
+        <result column="lastModifiedUser.name" jdbcType="VARCHAR" property="lastModifiedUser.name"/>
+        <result column="last_modified_time" jdbcType="TIMESTAMP" property="lastModifiedTime"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="deleted" jdbcType="BIT" property="deleted"/>
+    </resultMap>
+
+    <resultMap id="treeResultMap" type="com.xiaomizhou.system.entity.DepartmentEntity" extends="baseResultMap">
+        <collection property="children" ofType="com.xiaomizhou.system.entity.DepartmentEntity" javaType="java.util.List"
+                    select="com.xiaomizhou.system.repository.DepartmentRepository.childrenListByParentId"
+                    column="id"/>
+    </resultMap>
+
+    <sql id="orderBySql">
+        <choose>
+            <when test='pageable != null and pageable.sort != null'>
+                <foreach collection="pageable.sort.toList()" item="order"
+                         index="index" open=" order by " close="" separator=",">
+                    <include refid="orderByField"/>
+                </foreach>
+            </when>
+            <otherwise>
+                order by t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="orderByField">
+        <choose>
+            <when test="order.property == 'code'">
+                t.code
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'name'">
+                t.name
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'orderNo'">
+                t.order_no
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'createdTime'">
+                t.created_time
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <otherwise>
+                t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="selectBase">
+        SELECT
+            t.id,
+            t.code,
+            t.`name`,
+            t.organization_id,
+            organization.code AS "organization.code",
+            organization.name AS "organization.name",
+            t.parent_id,
+            parent.code AS "parent.code",
+            parent.name AS "parent.name",
+            t.order_no,
+            t.`status`,
+            t.created_time,
+            t.created_user_id,
+            createdUser.name      AS "createdUser.name",
+            t.last_modified_time,
+            t.last_modified_user_id,
+            lastModifiedUser.name AS "lastModifiedUser.name",
+            t.description,
+            t.deleted
+        FROM t_department t
+                 LEFT JOIN t_user createdUser ON t.created_user_id = createdUser.id
+                 LEFT JOIN t_user lastModifiedUser ON t.last_modified_user_id = lastModifiedUser.id
+                 LEFT JOIN t_organization organization ON t.organization_id = organization.id
+                 LEFT JOIN t_department parent ON t.parent_id = parent.id
+    </sql>
+
+    <select id="findById" resultMap="treeResultMap">
+        <include refid="selectBase"/>
+        WHERE t.deleted = 0 AND t.id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="find" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        <where>
+            t.deleted = 0
+            <if test="parameters.code != null and parameters.code != ''">
+                AND t.code LIKE CONCAT('%', #{parameters.code}, '%')
+            </if>
+            <if test="parameters.name != null and parameters.name != ''">
+                AND t.name LIKE CONCAT('%', #{parameters.name}, '%')
+            </if>
+            <if test="parameters.status != null and parameters.status != ''">
+                AND t.status = #{parameters.status}
+            </if>
+            <if test="parameters.organizationId != null and parameters.organizationId != ''">
+                AND t.organization_id = #{parameters.organizationId}
+            </if>
+            <if test="parameters.organizationCode != null and parameters.organizationCode != ''">
+                AND organization.code = #{parameters.organizationCode}
+            </if>
+            <if test="parameters.organizationName != null and parameters.organizationName != ''">
+                AND organization.name LIKE CONCAT('%', #{parameters.organizationName}, '%')
+            </if>
+            <if test="parameters.parentId != null and parameters.parentId != ''">
+                AND t.parent_id = #{parameters.parentId}
+            </if>
+            <if test="parameters.parentCode != null and parameters.parentCode != ''">
+                AND parent.code = #{parameters.parentCode}
+            </if>
+            <if test="parameters.parentName != null and parameters.parentName != ''">
+                AND parent.name LIKE CONCAT('%', #{parameters.parentName}, '%')
+            </if>
+        </where>
+        <include refid="orderBySql"/>
+    </select>
+
+    <select id="listByOrganizationId" parameterType="java.lang.String" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        WHERE t.deleted = 0 AND t.organization_id = #{organizationId,jdbcType=VARCHAR}
+        ORDER BY t.order_no ASC, t.created_time DESC
+    </select>
+
+    <select id="childrenListByParentId" parameterType="java.lang.String" resultMap="treeResultMap">
+        <include refid="selectBase"/>
+        WHERE t.deleted = 0 AND t.parent_id = #{parentId,jdbcType=VARCHAR}
+        ORDER BY t.order_no ASC, t.created_time DESC
+    </select>
+</mapper>

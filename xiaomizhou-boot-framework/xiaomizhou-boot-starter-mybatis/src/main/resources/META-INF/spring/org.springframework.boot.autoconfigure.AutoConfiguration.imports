@@ -1,2 +1,3 @@
 com.xiaomizhou.mybatis.configuration.MybatisPageHelperConfiguration
 com.xiaomizhou.mybatis.configuration.MyBatisEnumTypeConfiguration
+com.xiaomizhou.mybatis.configuration.MyBatisPlusConfiguration

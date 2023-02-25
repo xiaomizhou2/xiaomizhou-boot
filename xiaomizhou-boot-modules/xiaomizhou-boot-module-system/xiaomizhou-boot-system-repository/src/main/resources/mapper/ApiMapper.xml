@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaomizhou.system.repository.ApiRepository">
+    <resultMap id="baseResultMap" type="com.xiaomizhou.system.entity.ApiEntity">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="method" jdbcType="VARCHAR" property="method"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="type" jdbcType="TINYINT" property="type"/>
+        <result column="order_no" jdbcType="TINYINT" property="orderNo"/>
+        <result column="resource_id" jdbcType="VARCHAR" property="resource.id"/>
+        <result column="resource.code" jdbcType="VARCHAR" property="resource.code"/>
+        <result column="resource.name" jdbcType="VARCHAR" property="resource.name"/>
+        <result column="created_user_id" jdbcType="VARCHAR" property="createdUser.id"/>
+        <result column="createdUser.name" jdbcType="VARCHAR" property="createdUser.name"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="last_modified_user_id" jdbcType="VARCHAR" property="lastModifiedUser.id"/>
+        <result column="lastModifiedUser.name" jdbcType="VARCHAR" property="lastModifiedUser.name"/>
+        <result column="last_modified_time" jdbcType="TIMESTAMP" property="lastModifiedTime"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="deleted" jdbcType="BIT" property="deleted"/>
+    </resultMap>
+
+    <sql id="orderBySql">
+        <choose>
+            <when test='pageable != null and pageable.sort != null'>
+                <foreach collection="pageable.sort.toList()" item="order"
+                         index="index" open=" order by " close="" separator=",">
+                    <include refid="orderByField"/>
+                </foreach>
+            </when>
+            <otherwise>
+                order by t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="orderByField">
+        <choose>
+            <when test="order.property == 'code'">
+                t.code
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'name'">
+                t.name
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'url'">
+                t.url
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'method'">
+                t.method
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'orderNo'">
+                t.order_no
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'createdTime'">
+                t.created_time
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <otherwise>
+                t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="selectBase">
+        SELECT
+            t.id,
+            t.code,
+            t.`name`,
+            t.`method`,
+            t.url,
+            t.order_no,
+            t.type,
+            t.resource_id,
+            resource.code AS "resource.code",
+            resource.name AS "resource.name",
+            t.created_user_id,
+            createdUser.name AS "createdUser.name",
+            t.created_time,
+            t.last_modified_user_id,
+            lastModifiedUser.name AS "lastModifiedUser.name",
+            t.last_modified_time,
+            t.description,
+            t.deleted
+        FROM t_api t
+                 LEFT JOIN t_user createdUser ON t.created_user_id = createdUser.id
+                 LEFT JOIN t_user lastModifiedUser ON t.last_modified_user_id = lastModifiedUser.id
+                 LEFT JOIN t_resource resource ON t.resource_id = resource.id
+    </sql>
+
+    <select id="findById" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        WHERE t.deleted = 0 AND t.id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="find" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        <where>
+            t.deleted = 0
+            <if test="parameters.code != null and parameters.code != ''">
+                AND t.code LIKE CONCAT('%', #{parameters.code}, '%')
+            </if>
+            <if test="parameters.name != null and parameters.name != ''">
+                AND t.name LIKE CONCAT('%', #{parameters.name}, '%')
+            </if>
+            <if test="parameters.method != null and parameters.method != ''">
+                AND t.method = #{parameters.method}
+            </if>
+            <if test="parameters.url != null and parameters.url != ''">
+                AND t.url LIKE CONCAT('%', #{parameters.url}, '%')
+            </if>
+            <if test="parameters.resourceId != null and parameters.resourceId != ''">
+                AND t.resource_id = #{parameters.resourceId}
+            </if>
+            <if test="parameters.resourceCode != null and parameters.resourceCode != ''">
+                AND resource.code = #{parameters.resourceCode}
+            </if>
+            <if test="parameters.resourceName != null and parameters.resourceName != ''">
+                AND resource.name LIKE CONCAT('%', #{parameters.resourceName}, '%')
+            </if>
+            <if test="parameters.type != null and parameters.type != ''">
+                AND t.type = #{parameters.type}
+            </if>
+        </where>
+        <include refid="orderBySql"/>
+    </select>
+
+    <select id="listByPermissionId" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        LEFT JOIN t_permission_api permissionApi ON t.id = permissionApi.api_id
+        <where>
+            t.deleted = 0 AND permissionApi.permission_id = #{permissionId,jdbcType=VARCHAR}
+        </where>
+        ORDER BY t.order_no ASC, t.created_time DESC
+    </select>
+</mapper>

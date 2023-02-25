@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.xiaomizhou.system.repository.RoleRepository">
+    <resultMap id="baseResultMap" type="com.xiaomizhou.system.entity.RoleEntity">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="order_no" jdbcType="TINYINT" property="orderNo"/>
+        <result column="application_id" jdbcType="VARCHAR" property="application.id"/>
+        <result column="application.code" jdbcType="VARCHAR" property="application.code"/>
+        <result column="application.name" jdbcType="VARCHAR" property="application.name"/>
+        <result column="if_admin" jdbcType="BIT" property="ifAdmin"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="created_user_id" jdbcType="VARCHAR" property="createdUser.id"/>
+        <result column="createdUser.name" jdbcType="VARCHAR" property="createdUser.name"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="last_modified_user_id" jdbcType="VARCHAR" property="lastModifiedUser.id"/>
+        <result column="lastModifiedUser.name" jdbcType="VARCHAR" property="lastModifiedUser.name"/>
+        <result column="last_modified_time" jdbcType="TIMESTAMP" property="lastModifiedTime"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="deleted" jdbcType="BIT" property="deleted"/>
+    </resultMap>
+
+    <resultMap id="detailResultMap" type="com.xiaomizhou.system.entity.RoleEntity" extends="baseResultMap">
+        <collection property="permissions" ofType="com.xiaomizhou.system.entity.PermissionEntity" javaType="java.util.List"
+                    select="com.xiaomizhou.system.repository.PermissionRepository.listByRoleId"
+                    column="id"/>
+    </resultMap>
+
+    <sql id="orderBySql">
+        <choose>
+            <when test='pageable != null and pageable.sort != null'>
+                <foreach collection="pageable.sort.toList()" item="order"
+                         index="index" open=" order by " close="" separator=",">
+                    <include refid="orderByField"/>
+                </foreach>
+            </when>
+            <otherwise>
+                order by t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="orderByField">
+        <choose>
+            <when test="order.property == 'id'">
+                t.id
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'name'">
+                t.name
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'code'">
+                t.code
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'orderNo'">
+                t.order_no
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <when test="order.property == 'createdTime'">
+                t.created_time
+                <include refid="com.xiaomizhou.mybatis.repository.BaseSearchRepository.sortSql"/>
+            </when>
+            <otherwise>
+                t.created_time desc
+            </otherwise>
+        </choose>
+    </sql>
+
+    <sql id="selectBase">
+        SELECT
+            t.id,
+            t.code,
+            t.`name`,
+            t.application_id,
+            application.code AS "application.code",
+            application.name AS "application.name",
+            t.order_no,
+            t.status,
+            t.if_admin,
+            t.created_user_id,
+            createdUser.name AS "createdUser.name",
+            t.created_time,
+            t.last_modified_user_id,
+            lastModifiedUser.name AS "lastModifiedUser.name",
+            t.last_modified_time,
+            t.description,
+            t.deleted
+        FROM t_role t
+                 LEFT JOIN t_application application ON t.application_id = application.id
+                 LEFT JOIN t_user createdUser ON t.id = createdUser.id
+                 LEFT JOIN t_user lastModifiedUser ON t.id = lastModifiedUser.id
+    </sql>
+
+    <select id="findById" resultMap="detailResultMap">
+        <include refid="selectBase"/>
+        WHERE t.deleted = 0 AND t.id = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="find" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        <where>
+            t.deleted = 0
+            <if test="parameters.code != null and parameters.code != ''">
+                AND t.code LIKE CONCAT('%', #{parameters.code}, '%')
+            </if>
+            <if test="parameters.name != null and parameters.name != ''">
+                AND t.name LIKE CONCAT('%', #{parameters.name}, '%')
+            </if>
+            <if test="parameters.applicationId != null and parameters.applicationId != ''">
+                AND t.application_id = #{parameters.applicationId}
+            </if>
+            <if test="parameters.applicationCode != null and parameters.applicationCode != ''">
+                AND t.application_code = #{parameters.applicationCode}
+            </if>
+            <if test="parameters.applicationName != null and parameters.applicationName != ''">
+                AND t.application_name LIKE CONCAT('%', #{parameters.applicationName}, '%')
+            </if>
+            <if test="parameters.status != null and parameters.status != ''">
+                AND t.status = #{parameters.status}
+            </if>
+        </where>
+        <include refid="orderBySql"/>
+    </select>
+
+    <select id="listByUserId" resultMap="baseResultMap">
+        <include refid="selectBase"/>
+        LEFT JOIN t_user_role user_role on t.id = user_role.role_id
+        WHERE t.deleted = 0 AND user_role.user_id = #{userId}
+        ORDER BY t.order_no ASC, t.created_time DESC
+    </select>
+</mapper>
