@@ -1,10 +1,7 @@
 package com.xiaomizhou.system.repository;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiaomizhou.mybatis.repository.BaseSearchRepository;
 import com.xiaomizhou.system.entity.ApiEntity;
-
-import java.util.List;
 
 /**
  * @author xiaomizhou

@@ -5,11 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaomizhou</groupId>
-        <artifactId>xiaomizhou-boot-module-system</artifactId>
-        <version>${revision}</version>
+        <artifactId>xiaomizhou-boot-modules</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>xiaomizhou-boot-system-repository</artifactId>
+    <artifactId>xiaomizhou-boot-system-common</artifactId>
 
     <properties>
 
@@ -18,12 +19,8 @@
     <dependencies>
         <dependency>
             <groupId>com.xiaomizhou</groupId>
-            <artifactId>xiaomizhou-boot-system-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.xiaomizhou</groupId>
-            <artifactId>xiaomizhou-boot-starter-mybatis</artifactId>
+            <artifactId>xiaomizhou-boot-common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

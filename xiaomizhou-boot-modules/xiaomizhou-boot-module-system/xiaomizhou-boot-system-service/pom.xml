@@ -18,7 +18,17 @@
     <dependencies>
         <dependency>
             <groupId>com.xiaomizhou</groupId>
+            <artifactId>xiaomizhou-boot-system-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaomizhou</groupId>
             <artifactId>xiaomizhou-boot-system-repository</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaomizhou</groupId>
+            <artifactId>xiaomizhou-boot-starter-service</artifactId>
         </dependency>
     </dependencies>
 

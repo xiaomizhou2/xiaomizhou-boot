@@ -10,21 +10,27 @@
         <relativePath>../../xiaomizhou-boot-build</relativePath>
     </parent>
 
-    <artifactId>xiaomizhou-boot-module-system</artifactId>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>xiaomizhou-boot-system-common</module>
-        <module>xiaomizhou-boot-system-repository</module>
-        <module>xiaomizhou-boot-system-service</module>
-        <module>xiaomizhou-boot-system-controller</module>
-        <module>xiaomizhou-boot-system-api</module>
-        <module>xiaomizhou-boot-starter-system</module>
-    </modules>
-
+    <artifactId>xiaomizhou-boot-starter-service</artifactId>
 
     <properties>
 
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xiaomizhou</groupId>
+            <artifactId>xiaomizhou-boot-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaomizhou</groupId>
+            <artifactId>xiaomizhou-boot-starter-mybatis</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

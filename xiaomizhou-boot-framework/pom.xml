@@ -18,6 +18,7 @@
         <module>xiaomizhou-boot-starter-mybatis</module>
         <module>xiaomizhou-boot-starter-spring-mvc</module>
         <module>xiaomizhou-boot-starter-springdoc-openapi</module>
+        <module>xiaomizhou-boot-starter-service</module>
     </modules>
 
     <properties>

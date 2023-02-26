@@ -42,6 +42,12 @@
 
             <dependency>
                 <groupId>com.xiaomizhou</groupId>
+                <artifactId>xiaomizhou-boot-starter-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.xiaomizhou</groupId>
                 <artifactId>xiaomizhou-boot-starter-spring-mvc</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -52,6 +58,11 @@
                 <version>${revision}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.xiaomizhou</groupId>
+                <artifactId>xiaomizhou-boot-system-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <dependency>
                 <groupId>com.xiaomizhou</groupId>
                 <artifactId>xiaomizhou-boot-system-api</artifactId>
